@@ -9,6 +9,7 @@ public class PlayerController : MonoBehaviour {
 	public float speed;
 	public float jumpSpeed;
 	public float maxSpeed;
+	public Camera cam;
 	public Text introText;
 	public Text countText;
 	public Text winText;
@@ -16,6 +17,8 @@ public class PlayerController : MonoBehaviour {
 	private Rigidbody rb;
 	private int count;
 	private int maxCount;
+	private float moveVertical;
+	private bool jump;
 
 	void Start() {
 		rb = GetComponent<Rigidbody> ();
@@ -24,12 +27,16 @@ public class PlayerController : MonoBehaviour {
 		SetCountText ();
 		introText.text = "W,A,S,D - move \r\n Space - jump \r\n R - reset \r\n Pick up the coins!";
 		winText.text = "";
+		moveVertical = 0.0f;
+		jump = true;
 	}
 
 	void FixedUpdate () {
-		float moveHorizontal = Input.GetAxisRaw ("Horizontal");
-		float moveVertical = Input.GetAxisRaw ("Vertical");
-		Vector3 mov = new Vector3 (moveHorizontal, 0.0f, moveVertical).normalized * speed * Time.deltaTime;
+		//float moveHorizontal = Input.GetAxisRaw ("Horizontal");
+		moveVertical = Input.GetAxisRaw ("Vertical");
+		Vector3 mov = ((transform.position - cam.transform.position) * moveVertical).normalized;
+		mov.y = 0.0f;
+		mov = mov * speed * Time.deltaTime;
 
 		if (rb.velocity.magnitude < maxSpeed) {
 			rb.AddForce (mov);
@@ -37,8 +44,9 @@ public class PlayerController : MonoBehaviour {
 
 		//rb.MovePosition(transform.position + mov);
 
-		if (Input.GetKeyDown (KeyCode.Space) && (rb.velocity.y < 0.0001 && rb.velocity.y > -0.0001)) {
+		if (Input.GetKeyDown (KeyCode.Space) && !jump) {
 			rb.AddForce (new Vector3 (0.0f, jumpSpeed, 0.0f));
+			jump = true;
 		}
 
 	}
@@ -46,6 +54,13 @@ public class PlayerController : MonoBehaviour {
 	void Update() {
 		if (Input.GetKey (KeyCode.R)) {
 			RestartScene ();
+		}
+
+		if (moveVertical == 0) {
+			float x = rb.velocity.x / 10;
+			float z = rb.velocity.z / 10;
+
+			rb.velocity = new Vector3 (x, rb.velocity.y, z);
 		}
 
 		if (transform.position.y < -20.0f) {
@@ -67,6 +82,10 @@ public class PlayerController : MonoBehaviour {
 			count++;
 			SetCountText ();
 		}
+	}
+
+	void OnCollisionEnter(Collision col) {
+		jump = false;
 	}
 
 	void SetCountText() {
