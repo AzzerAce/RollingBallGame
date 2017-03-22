@@ -17,7 +17,12 @@ public class CameraController : MonoBehaviour {
 	// Update is called once per frame
 	void LateUpdate () {
 		float moveHorizontal = Input.GetAxisRaw ("Horizontal");
-		offset = Quaternion.AngleAxis (moveHorizontal * cameraRotateSpeed * Time.deltaTime, Vector3.up) * offset;
+		float moveVertical = Input.GetAxisRaw ("Vertical");
+		if (moveVertical < 0) {
+			offset = Quaternion.AngleAxis (-moveHorizontal * cameraRotateSpeed * Time.deltaTime, Vector3.up) * offset;
+		} else {
+			offset = Quaternion.AngleAxis (moveHorizontal * cameraRotateSpeed * Time.deltaTime, Vector3.up) * offset;
+		}
 
 		Transform camPlace = transform;
 		camPlace.position = player.transform.position + offset;

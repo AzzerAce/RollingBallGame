@@ -32,19 +32,27 @@ public class PlayerController : MonoBehaviour {
 	}
 
 	void FixedUpdate () {
-		//float moveHorizontal = Input.GetAxisRaw ("Horizontal");
+		float moveHorizontal = Input.GetAxisRaw ("Horizontal");
 		moveVertical = Input.GetAxisRaw ("Vertical");
-		Vector3 mov = ((transform.position - cam.transform.position) * moveVertical).normalized;
+		Vector3 mov = (transform.position - cam.transform.position) * moveVertical;
 		mov.y = 0.0f;
+		mov.Normalize ();
 		mov = mov * speed * Time.deltaTime;
 
 		if (rb.velocity.magnitude < maxSpeed) {
 			rb.AddForce (mov);
 		}
 
-		//rb.MovePosition(transform.position + mov);
+		if (moveVertical != 0) {
+			if (moveVertical < 0) {
+				rb.AddForce (Vector3.Cross (Vector3.up, mov).normalized * -moveHorizontal * speed * Time.deltaTime);
+			} else {
+				rb.AddForce (Vector3.Cross(Vector3.up, mov).normalized * moveHorizontal * speed * Time.deltaTime);
+			}
+		}
 
 		if (Input.GetKeyDown (KeyCode.Space) && !jump) {
+			rb.velocity = new Vector3(rb.velocity.x, 0.0f, rb.velocity.z);
 			rb.AddForce (new Vector3 (0.0f, jumpSpeed, 0.0f));
 			jump = true;
 		}
